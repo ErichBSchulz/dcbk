@@ -53,4 +53,3 @@ I can see the started container now with this command in a seperate session:
     docker ps --all --size
 
 
-

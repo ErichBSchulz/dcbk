@@ -1,37 +1,18 @@
 # Extracting logic from `civi-download-tools`
 # https://github.com/civicrm/civicrm-buildkit/blob/7641b2ae6109225b24fb7e25f68d57a8f8493e29/bin/civi-download-tools
-# PLATFORM=linux-amd64
-# FORMAT=tgz
-# https://github.com/github/hub/releases/download/v${VERSION}/hub-linux-amd64-${VERSION}.tgz
 
 # Pull base image.
 FROM ubuntu:14.04
 
-# fixme combine this =
-# RUN apt-get update && apt-get install -y \
-#  [packages]
-# && rm -rf /var/lib/apt/lists/*
-RUN apt-get update
-
-# Install curl
-RUN apt-get install -y curl
-
-# Install.
-# this includes:
-# git clone "https://github.com/civicrm/civicrm-buildkit.git" "$PRJDIR"
-RUN curl -Ls https://civicrm.org/get-buildkit.sh | bash -s -- --full --dir ~/buildkit
-
-# on precise so lines 310-313
-# was RUN curl -sL https://deb.nodesource.com/setup_0.12 | bash
-RUN curl -sL https://deb.nodesource.com/setup_4.x | bash
-RUN apt-get -y install \
+RUN apt-get update && apt-get install -y \
   acl \
   git \
+  curl \
   wget \
   unzip \
   zip \
-  mysql-server \
-  mysql-client \
+  mysql-server-5.5 \
+  mysql-client-5.5 \
   php5-cli \
   php5-imap \
   php5-ldap \
@@ -43,7 +24,17 @@ RUN apt-get -y install \
   php-apc \
   apache2 \
   libapache2-mod-php5 \
-  nodejs
+  makepasswd \
+  && rm -rf /var/lib/apt/lists/*
+
+# install node
+RUN curl -sL https://deb.nodesource.com/setup_4.x | bash
+
+## Fixme are these basic helpers useful?
+## (from here)[https://github.com/civicrm/civicrm-buildkit/blob/master/vagrant/trusty32-standalone/bootstrap.sh]
+##    colordiff \ git-man \ joe \ makepasswd \ patch \ rsync \ subversion \
+
+RUN git clone "https://github.com/civicrm/civicrm-buildkit.git" /root/buildkit
 
 # Set environment variables.
 ENV HOME /root
@@ -59,8 +50,8 @@ WORKDIR /root
 # https://getcomposer.org/doc/faqs/how-to-install-composer-programmatically.md
 # To update replace the commit hash by whatever the last commit hash is on
 # https://github.com/composer/getcomposer.org/commits/master
-RUN wget https://raw.githubusercontent.com/composer/getcomposer.org/2091762d2ebef14c02301f3039c41d08468fb49e/web/installer -O - -q | php -- --quiet
-RUN mv composer.phar buildkit/bin/composer
+RUN wget https://raw.githubusercontent.com/composer/getcomposer.org/2091762d2ebef14c02301f3039c41d08468fb49e/web/installer -O - -q | php -- --quiet \
+  &&  mv composer.phar buildkit/bin/composer
 # fixme warning: Do not run Composer as root/super user! See https://getcomposer.org/root for details
 
 # Warnings:
@@ -78,7 +69,8 @@ WORKDIR /root/buildkit
 RUN composer install
 
 ## Download dependencies (via npm)
-RUN npm install
+RUN apt-get install -y nodejs \
+  && npm install
 
 ## Download dependencies (directly)
 RUN curl -L -o bin/drush8 http://files.drush.org/drush.phar
@@ -100,11 +92,29 @@ RUN chmod +x bin/civistrings
 RUN curl -L -o bin/joomla https://download.civicrm.org/joomlatools-console/joomla.phar-2016-07-15-d2b7d23a
 RUN chmod +x bin/joomla
 
+# Get the hub
+# NB - HUB_VERSION="2.2.9" (nb was 2.2.3).
+RUN curl -L -o hub.tgz https://github.com/github/hub/releases/download/v2.2.9/hub-linux-amd64-2.2.9.tgz
+RUN mkdir -p extern/hub
+RUN tar --strip-components=1 -xvzf hub.tgz
+RUN rm hub.tgz
 
+# set user
+RUN MYSQLPASS=$(makepasswd --chars=16) \
+  && echo "mysql-server-5.5 mysql-server/root_password password $MYSQLPASS" | debconf-set-selections \
+  && echo "mysql-server-5.5 mysql-server/root_password_again password $MYSQLPASS" | debconf-set-selections \
+  && printf "[client]\nuser=root\npassword=$MYSQLPASS" > /root/.my.cnf \
+  && chmod 600 /root/.my.cnf
+
+## AMP configuration
+
+WORKDIR /root
+RUN mkdir .amp .amp/apache.d .amp/log  .amp/my.cnf.d  .amp/nginx.d \
+  && echo "Include /root/.amp/apache.d/*.conf" >> /etc/apache2/apache2.conf
+
+COPY services.yml /root/.amp
 RUN a2enmod rewrite
 RUN apache2ctl restart
 # fixme apache2: Could not reliably determine the server's fully qualified domain name, using 172.17.0.2. Set the 'ServerName' directive globally to suppress this message
 
 
-# Define default command.
-CMD ["bash"]
