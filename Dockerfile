@@ -7,6 +7,10 @@
 # Pull base image.
 FROM ubuntu:14.04
 
+# fixme combine this =
+# RUN apt-get update && apt-get install -y \
+#  [packages]
+# && rm -rf /var/lib/apt/lists/*
 RUN apt-get update
 
 # Install curl
@@ -76,11 +80,30 @@ RUN composer install
 ## Download dependencies (via npm)
 RUN npm install
 
+## Download dependencies (directly)
+RUN curl -L -o bin/drush8 http://files.drush.org/drush.phar
+RUN chmod +x bin/drush8
+RUN curl -L -o bin/cv https://download.civicrm.org/cv/cv.phar-2017-01-10-f6b47864
+RUN chmod +x bin/cv
+RUN curl -L -o bin/phpunit4 https://phar.phpunit.de/phpunit-4.8.21.pharL
+RUN chmod +x bin/phpunit4
+RUN curl -L -o bin/wp https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar
+RUN chmod +x bin/wp
+RUN curl -L -o bin/git-scan https://download.civicrm.org/git-scan/git-scan.phar-2017-01-02-afcec5d4
+RUN chmod +x bin/git-scan
+RUN curl -L -o bin/amp https://download.civicrm.org/amp/amp.phar-2016-10-12-41c6b749
+RUN chmod +x bin/amp
+RUN curl -L -o bin/civix https://download.civicrm.org/civix/civix.phar-2017-01-02-dd122605
+RUN chmod +x bin/civix
+RUN curl -L -o bin/civistrings https://download.civicrm.org/civistrings/civistrings.phar-2016-03-10-df547ff9
+RUN chmod +x bin/civistrings
+RUN curl -L -o bin/joomla https://download.civicrm.org/joomlatools-console/joomla.phar-2016-07-15-d2b7d23a
+RUN chmod +x bin/joomla
+
 
 RUN a2enmod rewrite
 RUN apache2ctl restart
 # fixme apache2: Could not reliably determine the server's fully qualified domain name, using 172.17.0.2. Set the 'ServerName' directive globally to suppress this message
-
 
 
 # Define default command.

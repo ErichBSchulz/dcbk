@@ -7,6 +7,10 @@ based on the buildkit
 with inspiration from
 [progressivetech's efforts](https://github.com/progressivetech/docker-civicrm-buildkit).
 
+The `Dockerfile` extracts the logic from `civi-download-tools`
+((this version)[https://github.com/civicrm/civicrm-buildkit/blob/7641b2ae6109225b24fb7e25f68d57a8f8493e29/bin/civi-download-tools]),
+including the `npm` and `composer` phases and pulling the indidividual tools.
+
 The standard docker flow is to:
 
 * `build` an image (takes a long time with plenty of downloads)
