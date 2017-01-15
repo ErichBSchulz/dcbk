@@ -4,6 +4,7 @@
 # Pull base image.
 FROM ubuntu:14.04
 
+# core dependancies:
 RUN apt-get update && apt-get install -y \
   acl \
   git \
@@ -11,8 +12,6 @@ RUN apt-get update && apt-get install -y \
   wget \
   unzip \
   zip \
-  mysql-server-5.5 \
-  mysql-client-5.5 \
   php5-cli \
   php5-imap \
   php5-ldap \
@@ -25,10 +24,20 @@ RUN apt-get update && apt-get install -y \
   apache2 \
   libapache2-mod-php5 \
   makepasswd \
-  && rm -rf /var/lib/apt/lists/*
+  runit
 
-# install node
-RUN curl -sL https://deb.nodesource.com/setup_4.x | bash
+# Set-up mysql password before installing mysql
+# (this step depends on makepasswd, so splitting requires splitting the apt install)
+# set mysql root user password:
+RUN MYSQLPASS=$(makepasswd --chars=16) \
+  && echo "mysql-server-5.5 mysql-server/root_password password $MYSQLPASS" | debconf-set-selections \
+  && echo "mysql-server-5.5 mysql-server/root_password_again password $MYSQLPASS" | debconf-set-selections \
+  && printf "[client]\nuser=root\npassword=$MYSQLPASS" > /root/.my.cnf \
+  && chmod 600 /root/.my.cnf
+# MySQL
+RUN apt-get install -y \
+  mysql-server-5.5 \
+  mysql-client-5.5
 
 ## Fixme are these basic helpers useful?
 ## (from here)[https://github.com/civicrm/civicrm-buildkit/blob/master/vagrant/trusty32-standalone/bootstrap.sh]
@@ -40,10 +49,10 @@ RUN git clone "https://github.com/civicrm/civicrm-buildkit.git" /root/buildkit
 ENV HOME /root
 # Add build kit to the standard path
 ENV PATH /root/buildkit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
 # Define working directory.
 WORKDIR /root
 
+################################################################################
 # install composer
 #
 # Approach lifted from:
@@ -68,10 +77,16 @@ RUN wget https://raw.githubusercontent.com/composer/getcomposer.org/2091762d2ebe
 WORKDIR /root/buildkit
 RUN composer install
 
+################################################################################
+# install node
+# the previous pattern has been to install npm and npm-legacy but that broke
+# on the `npm install` phase
+RUN curl -sL https://deb.nodesource.com/setup_4.x | bash \
+  && apt-get install -y nodejs
 ## Download dependencies (via npm)
-RUN apt-get install -y nodejs \
-  && npm install
+RUN npm install
 
+################################################################################
 ## Download dependencies (directly)
 RUN curl -L -o bin/drush8 http://files.drush.org/drush.phar
 RUN chmod +x bin/drush8
@@ -92,6 +107,7 @@ RUN chmod +x bin/civistrings
 RUN curl -L -o bin/joomla https://download.civicrm.org/joomlatools-console/joomla.phar-2016-07-15-d2b7d23a
 RUN chmod +x bin/joomla
 
+################################################################################
 # Get the hub
 # NB - HUB_VERSION="2.2.9" (nb was 2.2.3).
 RUN curl -L -o hub.tgz https://github.com/github/hub/releases/download/v2.2.9/hub-linux-amd64-2.2.9.tgz
@@ -99,22 +115,30 @@ RUN mkdir -p extern/hub
 RUN tar --strip-components=1 -xvzf hub.tgz
 RUN rm hub.tgz
 
-# set user
-RUN MYSQLPASS=$(makepasswd --chars=16) \
-  && echo "mysql-server-5.5 mysql-server/root_password password $MYSQLPASS" | debconf-set-selections \
-  && echo "mysql-server-5.5 mysql-server/root_password_again password $MYSQLPASS" | debconf-set-selections \
-  && printf "[client]\nuser=root\npassword=$MYSQLPASS" > /root/.my.cnf \
-  && chmod 600 /root/.my.cnf
+################################################################################
+# Handle service starting with runit.
+# from https://github.com/progressivetech/docker-civicrm-buildkit/blob/master/Dockerfile#L52
+RUN mkdir /etc/sv/mysql /etc/sv/apache /etc/sv/sshd
+COPY mysql.run /etc/sv/mysql/run
+COPY apache.run /etc/sv/apache/run
+COPY sshd.run /etc/sv/sshd/run
+RUN update-service --add /etc/sv/mysql
+RUN update-service --add /etc/sv/apache
+RUN update-service --add /etc/sv/sshd
 
+################################################################################
 ## AMP configuration
-
 WORKDIR /root
 RUN mkdir .amp .amp/apache.d .amp/log  .amp/my.cnf.d  .amp/nginx.d \
-  && echo "Include /root/.amp/apache.d/*.conf" >> /etc/apache2/apache2.conf
+  && echo "IncludeOptional /root/.amp/apache.d/*.conf" >> /etc/apache2/apache2.conf \
+  && echo "ServerName civicrm-buildkit" > /etc/apache2/conf-available/civicrm-buildkit.conf
 
 COPY services.yml /root/.amp
-RUN a2enmod rewrite
+
+# Drupal requires mod rewrite.
+# RUN a2enmod rewrite
+
+RUN a2enconf civicrm-buildkit
 RUN apache2ctl restart
-# fixme apache2: Could not reliably determine the server's fully qualified domain name, using 172.17.0.2. Set the 'ServerName' directive globally to suppress this message
 
-
+ENTRYPOINT ["runit"]
