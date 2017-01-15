@@ -16,6 +16,7 @@ The standard docker flow is to:
 * `build` an image (takes a long time with plenty of downloads)
 * `create` a container based on this image
 * `start` the container
+* `exec` commands in the running container
 
 ## Build
 

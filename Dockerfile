@@ -126,6 +126,7 @@ RUN update-service --add /etc/sv/mysql
 RUN update-service --add /etc/sv/apache
 RUN update-service --add /etc/sv/sshd
 
+COPY sshd.run /etc/sv/sshd/run
 ################################################################################
 ## AMP configuration
 WORKDIR /root
@@ -141,4 +142,6 @@ COPY services.yml /root/.amp
 RUN a2enconf civicrm-buildkit
 RUN apache2ctl restart
 
-ENTRYPOINT ["runit"]
+COPY runit_bootstrap /usr/sbin/runit_bootstrap
+RUN chmod 755 /usr/sbin/runit_bootstrap
+ENTRYPOINT ["/usr/sbin/runit_bootstrap"]
