@@ -129,15 +129,12 @@ RUN update-service --add /etc/sv/sshd
 COPY sshd.run /etc/sv/sshd/run
 ################################################################################
 ## AMP configuration
-RUN mkdir /amp
-WORKDIR /amp
+WORKDIR /root
 RUN mkdir .amp .amp/apache.d .amp/log  .amp/my.cnf.d  .amp/nginx.d \
-  && echo "IncludeOptional /amp/.amp/apache.d/*.conf" >> /etc/apache2/apache2.conf \
+  && echo "IncludeOptional /root/.amp/apache.d/*.conf" >> /etc/apache2/apache2.conf \
   && echo "ServerName civicrm-buildkit" > /etc/apache2/conf-available/civicrm-buildkit.conf
 
-RUN chown -R www-data:www-data /amp
-
-COPY services.yml /amp/.amp
+COPY services.yml /root/.amp
 
 # Drupal requires mod rewrite.
 # RUN a2enmod rewrite
