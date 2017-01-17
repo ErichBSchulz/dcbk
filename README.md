@@ -18,6 +18,8 @@ The standard docker flow is to:
 * `start` the container
 * `exec` commands in the running container
 
+The "clean-up and rebuild" steps are in the `rebuild.sh` script.
+
 ## Build
 
       # build the image with name dcbk:v1
@@ -38,19 +40,14 @@ But I'm just trying this for now:
     docker create -p 2222:22 -p 8001:8001 --name buildkit dcbk:v1
 
 
-
 ## Start
 
-So, AFAIK this should be how you start your container:
+This should be how you start your container:
 
     docker start buildkit
 
-But my dockerfile must be wrong, so instead I can start it by using `docker run`:
+You  can see the started container now with this command in a seperate session:
 
-    docker run -it dcbk:v1 /bin/bash
-
-I can see the started container now with this command in a seperate session:
-
-    docker ps --all --size
+    docker ps
 
 
