@@ -54,8 +54,6 @@ RUN php5enmod mcrypt && php5enmod imap && a2enmod rewrite && apache2ctl restart
 # on the `npm install` phase
 RUN curl -sL https://deb.nodesource.com/setup_4.x | bash \
   && apt-get install -y nodejs
-## Download dependencies (via npm)
-RUN npm install
 
 ################################################################################
 ## Buildkit downloads: Get civicrm-buildkit.git
