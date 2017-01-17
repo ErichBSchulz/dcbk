@@ -43,6 +43,18 @@ RUN apt-get install -y \
 ## (from here)[https://github.com/civicrm/civicrm-buildkit/blob/master/vagrant/trusty32-standalone/bootstrap.sh]
 ##    colordiff \ git-man \ joe \ makepasswd \ patch \ rsync \ subversion \
 
+################################################################################
+# install node
+# the previous pattern has been to install npm and npm-legacy but that broke
+# on the `npm install` phase
+RUN curl -sL https://deb.nodesource.com/setup_4.x | bash \
+  && apt-get install -y nodejs
+## Download dependencies (via npm)
+RUN npm install
+
+################################################################################
+## get civicrm-buildkit.git
+
 RUN git clone "https://github.com/civicrm/civicrm-buildkit.git" /root/buildkit
 
 # Set environment variables.
@@ -72,19 +84,9 @@ RUN wget https://raw.githubusercontent.com/composer/getcomposer.org/2091762d2ebe
 # symfony/dependency-injection suggests installing symfony/proxy-manager-bridge (Generate service proxies to lazy load them)
 # symfony/templating suggests installing psr/log (For using debug logging in loaders)
 
-
 ## Download dependencies (via composer)
 WORKDIR /root/buildkit
 RUN composer install
-
-################################################################################
-# install node
-# the previous pattern has been to install npm and npm-legacy but that broke
-# on the `npm install` phase
-RUN curl -sL https://deb.nodesource.com/setup_4.x | bash \
-  && apt-get install -y nodejs
-## Download dependencies (via npm)
-RUN npm install
 
 ################################################################################
 ## Download dependencies (directly)
