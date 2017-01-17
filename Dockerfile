@@ -46,6 +46,8 @@ RUN apt-get install -y \
 ## (from here)[https://github.com/civicrm/civicrm-buildkit/blob/master/vagrant/trusty32-standalone/bootstrap.sh]
 ##    colordiff \ git-man \ joe \ makepasswd \ patch \ rsync \ subversion \
 
+RUN php5enmod mcrypt && php5enmod imap && a2enmod rewrite && apache2ctl restart
+
 ################################################################################
 # System downloads: Install NodeJS
 # the previous pattern has been to install npm and npm-legacy but that broke
