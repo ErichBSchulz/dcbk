@@ -99,7 +99,13 @@ RUN useradd -m ampuser \
   && echo 'declare -x PATH="/opt/buildkit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' \
     >> /home/ampuser/.bashrc \
   && cp .my.cnf /home/ampuser \
-  && chown ampuser /home/ampuser/.my.cnf
+  && chown ampuser /home/ampuser/.my.cnf \
+  && chown -R ampuser:www /var/lib/amp \
+  && echo "ampuser ALL=NOPASSWD: /usr/sbin/apachectl" >> /etc/sudoers.d/civicrm-buildkit
+  && chmod -R 777 /opt/buildkit
+
+#&& chmod 777 /var/lib/amp \
+#  && chmod 777 /var/lib/amp/apache.d/ \
 
 ################################################################################
 

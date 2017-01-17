@@ -51,3 +51,37 @@ You  can see the started container now with this command in a seperate session:
     docker ps
 
 
+chmod -R 777 /var/lib/amp
+groupadd www
+usermod -g www ampuser
+usermod -g www www-data
+chown -R ampuser:www /var/lib/amp
+id ampuser
+id www-data
+
+
++++ amp create -f --root=/opt/buildkit/build/dmaster --name=cms --prefix=CMS_ --url=http://dmaster.localhost --output-file=/tmp/ampvarx66JQs --perm=admin
+Register host "dmaster.localhost" (127.0.0.1) in "/etc/hosts" via helper "/tmp/fix-hosts-php-P5gRuh".
+[sudo] password for ampuser:
+Sorry, try again.
+[sudo] password for ampuser:
+Sorry, try again.
+[sudo] password for ampuser:
+Sorry, try again.
+sudo: 3 incorrect password attempts
+PHP Fatal error:  Uncaught exception 'RuntimeException' with message 'Failed to update hosts file (/etc/hosts) with (127.0.0.1 dmaster.localhost) [/tmp/fix-hosts-php-P5gRuh]' in phar:///opt/buildkit/bin/amp/src/Amp/Hostname/HostsFile.php:65
+Stack trace:
+#0 phar:///opt/buildkit/bin/amp/src/Amp/InstanceRepository.php(59): Amp\Hostname\HostsFile->createHostname('dmaster.localho...')
+#1 phar:///opt/buildkit/bin/amp/src/Amp/Command/CreateCommand.php(78): Amp\InstanceRepository->create(Object(Amp\Instance), true, true, 'admin')
+#2 phar:///opt/buildkit/bin/amp/vendor/symfony/console/Symfony/Component/Console/Command/Command.php(252): Amp\Command\CreateCommand->execute(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+#3 phar:///opt/buildkit/bin/amp/vendor/symfony/console/Symfony/Component/Console/Application.php(889): Symfony\Component\Console\Command\Command->run(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+#4 phar: in phar:///opt/buildkit/bin/amp/src/Amp/Hostname/HostsFile.php on line 65
+
+Fatal error: Uncaught exception 'RuntimeException' with message 'Failed to update hosts file (/etc/hosts) with (127.0.0.1 dmaster.localhost) [/tmp/fix-hosts-php-P5gRuh]' in phar:///opt/buildkit/bin/amp/src/Amp/Hostname/HostsFile.php:65
+Stack trace:
+#0 phar:///opt/buildkit/bin/amp/src/Amp/InstanceRepository.php(59): Amp\Hostname\HostsFile->createHostname('dmaster.localho...')
+#1 phar:///opt/buildkit/bin/amp/src/Amp/Command/CreateCommand.php(78): Amp\InstanceRepository->create(Object(Amp\Instance), true, true, 'admin')
+#2 phar:///opt/buildkit/bin/amp/vendor/symfony/console/Symfony/Component/Console/Command/Command.php(252): Amp\Command\CreateCommand->execute(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+#3 phar:///opt/buildkit/bin/amp/vendor/symfony/console/Symfony/Component/Console/Application.php(889): Symfony\Component\Console\Command\Command->run(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+#4 phar: in phar:///opt/buildkit/bin/amp/src/Amp/Hostname/HostsFile.php on line 65
+am

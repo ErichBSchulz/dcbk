@@ -1,10 +1,10 @@
 parameters:
     version: 2
     db_type: mysql_mycnf
-    perm_type: none
+    perm_type: worldWritable
     perm_user: www-data
     hosts_type: file
     httpd_type: apache24
-    httpd_restart_command: '/usr/sbin/apachectl graceful'
+    httpd_restart_command: 'sudo /usr/sbin/apachectl graceful'
 services: {  }
 
