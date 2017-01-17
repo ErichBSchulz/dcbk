@@ -58,12 +58,12 @@ RUN curl -sL https://deb.nodesource.com/setup_4.x | bash \
 ################################################################################
 ## Buildkit downloads: Get civicrm-buildkit.git
 
-RUN git clone "https://github.com/civicrm/civicrm-buildkit.git" /root/buildkit
+RUN git clone "https://github.com/civicrm/civicrm-buildkit.git" /opt/buildkit
 
 # Set environment variables.
 ENV HOME /root
 # Add build kit to the standard path
-ENV PATH /root/buildkit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH /opt/buildkit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # Define working directory.
 WORKDIR /root
 
@@ -84,12 +84,14 @@ COPY sshd.run /etc/sv/sshd/run
 
 ################################################################################
 ## System config: AMP
+ENV AMPHOME /var/lib/amp
 WORKDIR /root
-RUN mkdir .amp .amp/apache.d .amp/log  .amp/my.cnf.d  .amp/nginx.d \
-  && echo "IncludeOptional /root/.amp/apache.d/*.conf" >> /etc/apache2/apache2.conf \
+
+RUN mkdir "$AMPHOME" "$AMPHOME/apache.d" "$AMPHOME/log" "$AMPHOME/my.cnf.d" "$AMPHOME/nginx.d" \
+  && echo "IncludeOptional $AMPHOME/apache.d/*.conf" >> /etc/apache2/apache2.conf \
   && echo "ServerName civicrm-buildkit" > /etc/apache2/conf-available/civicrm-buildkit.conf
 
-COPY services.yml /root/.amp
+COPY services.yml $AMPHOME/services.yml
 
 # Drupal requires mod rewrite.
 # RUN a2enmod rewrite
@@ -100,3 +102,5 @@ RUN apache2ctl restart
 COPY runit_bootstrap /usr/sbin/runit_bootstrap
 RUN chmod 755 /usr/sbin/runit_bootstrap
 ENTRYPOINT ["/usr/sbin/runit_bootstrap"]
+
+
