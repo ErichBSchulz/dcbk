@@ -1,7 +1,7 @@
 parameters:
     version: 2
     db_type: mysql_mycnf
-    perm_type: linuxAcl
+    perm_type: none
     perm_user: www-data
     hosts_type: file
     httpd_type: apache24

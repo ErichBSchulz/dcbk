@@ -93,12 +93,26 @@ RUN mkdir "$AMPHOME" "$AMPHOME/apache.d" "$AMPHOME/log" "$AMPHOME/my.cnf.d" "$AM
 
 COPY services.yml $AMPHOME/services.yml
 
+################################################################################
+# user set up (path and mysql):
+RUN useradd -m ampuser \
+  && echo 'declare -x PATH="/opt/buildkit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' \
+    >> /home/ampuser/.bashrc \
+  && cp .my.cnf /home/ampuser \
+  && chown ampuser /home/ampuser/.my.cnf
+
+################################################################################
+
 # Drupal requires mod rewrite.
 # RUN a2enmod rewrite
 
+################################################################################
+# fixme: what doew this do??
 RUN a2enconf civicrm-buildkit
 RUN apache2ctl restart
 
+################################################################################
+# bootstrap
 COPY runit_bootstrap /usr/sbin/runit_bootstrap
 RUN chmod 755 /usr/sbin/runit_bootstrap
 ENTRYPOINT ["/usr/sbin/runit_bootstrap"]
