@@ -68,6 +68,11 @@ ENV PATH /opt/buildkit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sb
 WORKDIR /root
 
 RUN civi-download-tools
+# temp hack (to pull Tim's latest tweak)
+RUN cd /opt/buildkit \
+      && git pull
+# fill the caches:
+RUN civibuild cache-warmup
 
 ################################################################################
 ## System config: Handle service starting with runit.
@@ -95,16 +100,23 @@ COPY services.yml $AMPHOME/services.yml
 
 ################################################################################
 # user set up (path and mysql):
-RUN useradd -m ampuser \
+RUN groupadd www \
+  && useradd -m ampuser \
+  && usermod -g www ampuser \
+  && usermod -g www www-data \
   && echo 'declare -x PATH="/opt/buildkit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' \
     >> /home/ampuser/.bashrc \
   && cp .my.cnf /home/ampuser \
   && chown ampuser /home/ampuser/.my.cnf \
   && chown -R ampuser:www /var/lib/amp \
-  && echo "ampuser ALL=NOPASSWD: /usr/sbin/apachectl" >> /etc/sudoers.d/civicrm-buildkit
-  && chmod -R 777 /opt/buildkit
+  && echo "ampuser ALL=NOPASSWD: /usr/sbin/apachectl" >> /etc/sudoers.d/civicrm-buildkit \
+  && chmod -R 777 /opt/buildkit \
+  && chown root:www /etc/hosts \
+  && chmod 664 /etc/hosts
 
-#&& chmod 777 /var/lib/amp \
+# ^^^ fixme - last 2 lines dont work!!!
+
+# chmod 777 /var/lib/amp \
 #  && chmod 777 /var/lib/amp/apache.d/ \
 
 ################################################################################
@@ -121,6 +133,9 @@ RUN apache2ctl restart
 # bootstrap
 COPY runit_bootstrap /usr/sbin/runit_bootstrap
 RUN chmod 755 /usr/sbin/runit_bootstrap
+RUN chown root:www /etc/hosts
 ENTRYPOINT ["/usr/sbin/runit_bootstrap"]
+
+
 
 

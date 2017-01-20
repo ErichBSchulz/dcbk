@@ -14,6 +14,11 @@ docker create \
 echo "starting the container"
 docker start buildkit
 
-echo "You can open a bash shell with this command:"
+echo "You can open a bash shell with this command and fix bug and do first civibuild:"
 echo "    docker exec -it buildkit bash"
+echo "    chown root:www /etc/hosts"
+echo "    chmod 664 /etc/hosts"
+echo "    su ampuser"
+echo "    cd"
+echo "    civibuild create dmaster --url http://dmaster.localhost --admin-pass s3cr3t"
 
