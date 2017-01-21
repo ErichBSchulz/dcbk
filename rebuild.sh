@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script is merely a little sugar to automate the build, start
+# and test cycle.
+
 echo "Rebuilding the image"
 docker build -t dcbk:v1 .
 
@@ -14,10 +17,10 @@ docker create \
 echo "starting the container"
 docker start buildkit
 
-echo "You can open a bash shell with this command and fix bug and do first civibuild:"
+echo "build complete!"
+echo "You can open a bash shell with this command:"
 echo "    docker exec -it buildkit bash"
-echo "    chown root:www /etc/hosts"
-echo "    chmod 664 /etc/hosts"
+echo "Once you have opened a shell into your container, you can build your first CiviCRM with something like this:"
 echo "    su ampuser"
 echo "    cd"
 echo "    civibuild create dmaster --url http://dmaster.localhost --admin-pass s3cr3t"

@@ -109,12 +109,8 @@ RUN groupadd www \
   && cp .my.cnf /home/ampuser \
   && chown ampuser /home/ampuser/.my.cnf \
   && chown -R ampuser:www /var/lib/amp \
-  && echo "ampuser ALL=NOPASSWD: /usr/sbin/apachectl" >> /etc/sudoers.d/civicrm-buildkit \
-  && chmod -R 777 /opt/buildkit \
-  && chown root:www /etc/hosts \
-  && chmod 664 /etc/hosts
-
-# ^^^ fixme - last 2 lines dont work!!!
+  && echo "ampuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/civicrm-buildkit \
+  && chmod -R 777 /opt/buildkit
 
 # chmod 777 /var/lib/amp \
 #  && chmod 777 /var/lib/amp/apache.d/ \
@@ -135,7 +131,4 @@ COPY runit_bootstrap /usr/sbin/runit_bootstrap
 RUN chmod 755 /usr/sbin/runit_bootstrap
 RUN chown root:www /etc/hosts
 ENTRYPOINT ["/usr/sbin/runit_bootstrap"]
-
-
-
 
