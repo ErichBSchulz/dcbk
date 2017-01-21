@@ -1,0 +1,9 @@
+*.swp
+ampuser/.bash_history
+ampuser/.cache/
+ampuser/.composer/
+ampuser/.config/
+ampuser/.drush/
+ampuser/.my.cnf
+ampuser/.mysql_history
+build/
