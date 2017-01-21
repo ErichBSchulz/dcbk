@@ -8,12 +8,10 @@ docker build -t dcbk:v1 .
 
 echo "Cleaning up old containers"
 docker rm -f buildkit
+echo "Making folders for the mounted volumes"
+mkdir -p ampuser build
 echo "Making a container based on the image"
-docker create \
-  -p 2222:22 \
-  -p 8001:8001 \
-  -p 80:8002 \
-  --name buildkit dcbk:v1
+docker create  -p 2222:22  -p 8001:8001  -p 8000:80  -v $(pwd)/ampuser:/home/ampuser -v $(pwd)/build:/opt/buildkit/build --name buildkit dcbk:v1
 echo "starting the container"
 docker start buildkit
 

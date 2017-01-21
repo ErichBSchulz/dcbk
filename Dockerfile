@@ -27,7 +27,8 @@ RUN apt-get update && apt-get install -y \
   apache2 \
   libapache2-mod-php5 \
   makepasswd \
-  runit
+  runit \
+  openssh-server
 
 # Set-up mysql password before installing mysql
 # (this step depends on makepasswd, so splitting requires splitting the apt install)
@@ -68,9 +69,6 @@ ENV PATH /opt/buildkit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sb
 WORKDIR /root
 
 RUN civi-download-tools
-# temp hack (to pull Tim's latest tweak)
-RUN cd /opt/buildkit \
-      && git pull
 # fill the caches:
 RUN civibuild cache-warmup
 
@@ -112,8 +110,6 @@ RUN groupadd www \
   && echo "ampuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/civicrm-buildkit \
   && chmod -R 777 /opt/buildkit
 
-# chmod 777 /var/lib/amp \
-#  && chmod 777 /var/lib/amp/apache.d/ \
 
 ################################################################################
 
@@ -129,6 +125,5 @@ RUN apache2ctl restart
 # bootstrap
 COPY runit_bootstrap /usr/sbin/runit_bootstrap
 RUN chmod 755 /usr/sbin/runit_bootstrap
-RUN chown root:www /etc/hosts
 ENTRYPOINT ["/usr/sbin/runit_bootstrap"]
 

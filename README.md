@@ -30,3 +30,35 @@ your containers IP address is `172.17.0.2` add this to `/etc/hosts`:
 
     172.17.0.2 dmaster.localhost
 
+## SSH and your docker
+
+You may wish to `ssh` into your docker. Apparently this is not standard practice, but if you do want to then this is how:
+
+First generate a key with `ssh-keygen`. Call your key `id_rsa_bk`. After generating your key if you look in your ~/.ssh directory with `ls -lat ~/.ssh/*_bk*` you should see these two files with these permsission settings:
+
+```
+-rw------- 1 [you] [you] 1675 Jan 21 14:15 /home/[you]/.ssh/id_rsa_bk
+-rw-r--r-- 1 [you] [you]  392 Jan 21 14:15 /home/[you]/.ssh/id_rsa_bk.pub
+```
+
+Second, copy your public key into this directory:
+
+    cp ~/.ssh/id_rsa_bk.pub .
+
+Third, add these lines to your `~/.ssh/config` file:
+
+    Host bk
+    HostName localhost
+    Port 2222
+    User ampuser
+    IdentityFile ~/.ssh/id_rsa_bk
+
+You may then `ssh` into your container with
+
+    ssh bk
+
+And you can use `rcp` to copy files around (should you need to)
+
+    rcp -r bk:/opt/buildkit .
+
+
