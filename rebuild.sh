@@ -11,15 +11,29 @@ docker rm -f buildkit
 echo "Making folders for the mounted volumes"
 mkdir -p ampuser build
 echo "Making a container based on the image"
-docker create  -p 2222:22  -p 8001:8001  -p 8000:80  -v $(pwd)/ampuser:/home/ampuser -v $(pwd)/build:/opt/buildkit/build --name buildkit dcbk:v1
+docker create  -p 2222:2222  -p 8001:8001  -p 8000:80  -v $(pwd)/ampuser:/home/ampuser -v $(pwd)/build:/opt/buildkit/build --name buildkit dcbk:v1
 echo "starting the container"
 docker start buildkit
 
 echo "build complete!"
-echo "You can open a bash shell with this command:"
-echo "    docker exec -it buildkit bash"
-echo "Once you have opened a shell into your container, you can build your first CiviCRM with something like this:"
-echo "    su ampuser"
-echo "    cd"
-echo "    civibuild create dmaster --url http://dmaster.localhost --admin-pass s3cr3t"
+echo "
+You can open a bash shell with this command:
 
+    docker exec -it buildkit bash
+
+Once you have opened a shell into your container, you can build your first CiviCRM with something like this:
+
+    su ampuser
+    cd
+    civibuild create dmaster --url http://dmaster.localhost --admin-pass s3cr3t
+    sudo chown -R --quiet www-data:www-data /opt/buildkit/build/dmaster/
+
+To run unit tests (as root currently)
+
+    cd /opt/buildkit/build/dmaster/sites/all/modules/civicrm/tools
+    ./scripts/phpunit api_v3_ContactTest
+
+To tail the logs use:
+
+    docker logs -f buildkit
+"
