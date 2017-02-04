@@ -75,15 +75,14 @@ RUN civibuild cache-warmup
 ################################################################################
 ## System config: Handle service starting with runit.
 # from https://github.com/progressivetech/docker-civicrm-buildkit/blob/master/Dockerfile#L52
-RUN mkdir /etc/sv/mysql /etc/sv/apache /etc/sv/sshd
+RUN mkdir /etc/sv/mysql /etc/sv/apache /etc/sv/sshd /var/run/sshd \
+  && chmod 0755 /var/run/sshd
 COPY mysql.run /etc/sv/mysql/run
 COPY apache.run /etc/sv/apache/run
 COPY sshd.run /etc/sv/sshd/run
 RUN update-service --add /etc/sv/mysql
 RUN update-service --add /etc/sv/apache
 RUN update-service --add /etc/sv/sshd
-
-COPY sshd.run /etc/sv/sshd/run
 
 ################################################################################
 ## System config: AMP
