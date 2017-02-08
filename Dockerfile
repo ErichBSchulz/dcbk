@@ -76,12 +76,12 @@ RUN mkdir /etc/sv/mysql /etc/sv/apache /etc/sv/sshd
 COPY mysql.run /etc/sv/mysql/run
 COPY apache.run /etc/sv/apache/run
 COPY sshd.run /etc/sv/sshd/run
-RUN update-service --add /etc/sv/mysql
-RUN update-service --add /etc/sv/apache
-RUN update-service --add /etc/sv/sshd
-
 COPY sshd.run /etc/sv/sshd/run
-
+COPY runit_bootstrap /usr/sbin/runit_bootstrap
+RUN update-service --add /etc/sv/mysql \
+  && update-service --add /etc/sv/apache \
+  && update-service --add /etc/sv/sshd \
+  && chmod 755 /usr/sbin/runit_bootstrap
 ################################################################################
 ## System config: AMP
 ENV AMPHOME /var/lib/amp
@@ -93,16 +93,23 @@ RUN mkdir "$AMPHOME" "$AMPHOME/apache.d" "$AMPHOME/log" "$AMPHOME/my.cnf.d" "$AM
 
 COPY services.yml $AMPHOME/services.yml
 
+# fixme: what does this do??
+RUN a2enconf civicrm-buildkit
+RUN apache2ctl restart
+
 ################################################################################
 # user set up (path and mysql):
+# fixme - this is all scary and wrong - must be better way!
 RUN useradd -m ampuser \
+  && groupadd www \
   && echo 'declare -x PATH="/opt/buildkit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' \
     >> /home/ampuser/.bashrc \
   && cp .my.cnf /home/ampuser \
   && chown ampuser /home/ampuser/.my.cnf \
   && chown -R ampuser:www /var/lib/amp \
-  && echo "ampuser ALL=NOPASSWD: /usr/sbin/apachectl" >> /etc/sudoers.d/civicrm-buildkit
-  && chmod -R 777 /opt/buildkit
+  && echo "ampuser ALL=NOPASSWD: /usr/sbin/apachectl" >> /etc/sudoers.d/civicrm-buildkit \
+  && chmod -R 777 /opt/buildkit \
+  && chmod 666 /etc/hosts
 
 #&& chmod 777 /var/lib/amp \
 #  && chmod 777 /var/lib/amp/apache.d/ \
@@ -113,14 +120,9 @@ RUN useradd -m ampuser \
 # RUN a2enmod rewrite
 
 ################################################################################
-# fixme: what doew this do??
-RUN a2enconf civicrm-buildkit
-RUN apache2ctl restart
 
 ################################################################################
 # bootstrap
-COPY runit_bootstrap /usr/sbin/runit_bootstrap
-RUN chmod 755 /usr/sbin/runit_bootstrap
 ENTRYPOINT ["/usr/sbin/runit_bootstrap"]
 
 
