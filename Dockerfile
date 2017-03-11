@@ -74,9 +74,12 @@ RUN civibuild cache-warmup
 
 ################################################################################
 ## System config: Handle service starting with runit.
-# from https://github.com/progressivetech/docker-civicrm-buildkit/blob/master/Dockerfile#L52
+# from https://github.com/progressivetech/docker-civicrm-buildkit/blob/master/Dockerfile#L50 etc
+# also make some directories to keep sshd happy
+# and send mail to null so drupal and civicrm wont error
 RUN mkdir /etc/sv/mysql /etc/sv/apache /etc/sv/sshd /var/run/sshd \
-  && chmod 0755 /var/run/sshd
+  && chmod 0755 /var/run/sshd \
+  && ln -s /bin/true /usr/sbin/sendmail
 COPY mysql.run /etc/sv/mysql/run
 COPY apache.run /etc/sv/apache/run
 COPY sshd.run /etc/sv/sshd/run

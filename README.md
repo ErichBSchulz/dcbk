@@ -17,7 +17,9 @@ The standard docker flow is to:
 * `start` the container
 * `exec` commands in the running container
 
-The "clean-up and rebuild" steps are in the `rebuild.sh` script.
+The "clean-up and rebuild" steps are in the `rebuild.sh` script. The `rebuild.sh` script also provides details on using you container via the CLI once you have built it.
+
+## Set up your hosts file for browsing
 
 In order to use your browser you will need to add entries to your computers `/etc/hosts` file.
 
@@ -32,7 +34,8 @@ your containers IP address is `172.17.0.2` add this to `/etc/hosts`:
 
 ## SSH and your docker
 
-You may wish to `ssh` into your docker. Apparently this is not standard practice, but if you do want to then this is how:
+I am currently using docker to open a CLI shell, but
+you may wish to `ssh` into your docker. While apparently this is not standard practice, if do want to then this is how (I think):
 
 First generate a key with `ssh-keygen`. Call your key `id_rsa_bk`. After generating your key if you look in your ~/.ssh directory with `ls -lat ~/.ssh/*_bk*` you should see these two files with these permsission settings:
 

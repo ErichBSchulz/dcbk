@@ -21,19 +21,30 @@ You can open a bash shell with this command:
 
     docker exec -it buildkit bash
 
-Once you have opened a shell into your container, you can build your first CiviCRM with something like this:
+Once you have opened a shell into your container, you can build your first CiviCRM with something like this (the \`sudo chown\` steps are hacky and may or may not be needed):
 
     su ampuser
+    sudo cp /root/.my.cnf ~
+    sudo chown ampuser ~/.my.cnf
     cd
+    BUILDROOT=/opt/buildkit/build/dmaster
+    sudo chown -R --quiet ampuser:www-data \$BUILDROOT
     civibuild create dmaster --url http://dmaster.localhost --admin-pass s3cr3t
-    sudo chown -R --quiet www-data:www-data /opt/buildkit/build/dmaster/
+    sudo chown -R --quiet www-data:www-data \$BUILDROOT
 
 To run unit tests (as root currently)
 
-    cd /opt/buildkit/build/dmaster/sites/all/modules/civicrm/tools
+    cd \$BUILDROOT/sites/all/modules/civicrm/tools
+    sudo chown ampuser:ampuser \$BUILDROOT/sites/default/files/civicrm -R
+    sudo chmod 777 \$BUILDROOT/sites/default/files/civicrm -R
     ./scripts/phpunit api_v3_ContactTest
 
 To tail the logs use:
 
     docker logs -f buildkit
+
+or
+
+    tail \$BUILDROOT/sites/default/files/civicrm/ConfigAndLog/CiviCRM.*.log -f
 "
+
